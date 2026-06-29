@@ -8,6 +8,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class ActiveSessionsTable
@@ -23,6 +24,15 @@ class ActiveSessionsTable
                 TextColumn::make('ip_address')->label('IP')->searchable(),
                 TextColumn::make('last_seen_at')->label('Ultima atividade'),
                 TextColumn::make('user_agent')->label('Dispositivo')->limit(80)->toggleable(),
+            ])
+            ->filters([
+                TernaryFilter::make('online')
+                    ->label('Online agora')
+                    ->queries(
+                        true: fn ($query) => $query->where('last_activity', '>=', now()->subMinutes(15)->timestamp),
+                        false: fn ($query) => $query->where('last_activity', '<', now()->subMinutes(15)->timestamp),
+                        blank: fn ($query) => $query,
+                    ),
             ])
             ->recordActions([
                 ViewAction::make(),

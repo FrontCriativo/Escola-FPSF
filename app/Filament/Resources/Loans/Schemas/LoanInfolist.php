@@ -12,28 +12,36 @@ class LoanInfolist
         return $schema
             ->components([
                 TextEntry::make('user.name')
-                    ->label('User'),
+                    ->label('Aluno'),
                 TextEntry::make('book.title')
-                    ->label('Book'),
+                    ->label('Livro'),
                 TextEntry::make('status')
-                    ->badge(),
+                    ->label('Status')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => \App\Models\Loan::statusOptions()[$state] ?? $state),
                 TextEntry::make('borrowed_at')
-                    ->dateTime()
+                    ->label('Emprestado em')
+                    ->dateTime('d/m/Y H:i')
                     ->placeholder('-'),
                 TextEntry::make('due_at')
-                    ->dateTime()
+                    ->label('Devolver ate')
+                    ->dateTime('d/m/Y H:i')
                     ->placeholder('-'),
                 TextEntry::make('returned_at')
-                    ->dateTime()
+                    ->label('Devolvido em')
+                    ->dateTime('d/m/Y H:i')
                     ->placeholder('-'),
                 TextEntry::make('notes')
+                    ->label('Observacoes')
                     ->placeholder('-')
                     ->columnSpanFull(),
                 TextEntry::make('created_at')
-                    ->dateTime()
+                    ->label('Criado em')
+                    ->dateTime('d/m/Y H:i')
                     ->placeholder('-'),
                 TextEntry::make('updated_at')
-                    ->dateTime()
+                    ->label('Atualizado em')
+                    ->dateTime('d/m/Y H:i')
                     ->placeholder('-'),
             ]);
     }

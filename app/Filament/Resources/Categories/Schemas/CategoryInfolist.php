@@ -11,17 +11,20 @@ class CategoryInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('name'),
-                TextEntry::make('slug'),
-                TextEntry::make('color'),
+                TextEntry::make('name')->label('Nome'),
+                TextEntry::make('slug')->label('Slug'),
+                TextEntry::make('color')->label('Cor'),
                 TextEntry::make('description')
+                    ->label('Descricao')
                     ->placeholder('-')
                     ->columnSpanFull(),
                 TextEntry::make('created_at')
-                    ->dateTime()
+                    ->label('Criada em')
+                    ->dateTime('d/m/Y H:i')
                     ->placeholder('-'),
                 TextEntry::make('updated_at')
-                    ->dateTime()
+                    ->label('Atualizada em')
+                    ->dateTime('d/m/Y H:i')
                     ->placeholder('-'),
             ]);
     }

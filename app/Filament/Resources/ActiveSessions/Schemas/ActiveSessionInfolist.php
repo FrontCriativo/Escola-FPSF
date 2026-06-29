@@ -14,16 +14,20 @@ class ActiveSessionInfolist
                 TextEntry::make('id')
                     ->label('ID'),
                 TextEntry::make('user.name')
-                    ->label('User')
+                    ->label('Conta')
                     ->placeholder('-'),
                 TextEntry::make('ip_address')
+                    ->label('IP')
                     ->placeholder('-'),
                 TextEntry::make('user_agent')
+                    ->label('Dispositivo')
                     ->placeholder('-')
                     ->columnSpanFull(),
                 TextEntry::make('payload')
+                    ->label('Dados da sessao')
                     ->columnSpanFull(),
                 TextEntry::make('last_activity')
+                    ->label('Ultima atividade')
                     ->numeric(),
             ]);
     }

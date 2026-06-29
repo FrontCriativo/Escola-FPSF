@@ -8,8 +8,11 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -19,19 +22,45 @@ use Filament\Tables\Table;
 
 class UsersTable
 {
-    public static function configure(Table $table): Table
+    public static function configure(Table $table, bool $studentOnly = false): Table
     {
         return $table
+            ->defaultSort('name')
             ->columns([
                 TextColumn::make('name')->label('Nome')->searchable()->sortable(),
                 TextColumn::make('email')->label('Email')->searchable()->sortable(),
-                IconColumn::make('is_admin')->label('Admin')->boolean(),
+                TextColumn::make('enrollment_number')->label('Matricula')->searchable()->toggleable(isToggledHiddenByDefault: ! $studentOnly),
+                TextColumn::make('class_name')->label('Turma')->searchable()->toggleable(isToggledHiddenByDefault: ! $studentOnly),
+                TextColumn::make('enrollment_status')
+                    ->label('Status')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state): string => User::enrollmentStatusOptions()[$state] ?? '-')
+                    ->color(fn (?string $state): string => match ($state) {
+                        'active' => 'success',
+                        'inactive' => 'gray',
+                        'transferred' => 'warning',
+                        'graduated' => 'info',
+                        default => 'gray',
+                    })
+                    ->visible($studentOnly),
+                IconColumn::make('is_admin')->label('Admin')->boolean()->visible(! $studentOnly),
                 TextColumn::make('loans_count')->label('Emprestimos')->counts('loans')->sortable(),
                 TextColumn::make('created_at')->label('Criada em')->dateTime('d/m/Y H:i')->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->filters([
+                TernaryFilter::make('is_admin')->label('Admins')->visible(! $studentOnly),
+                SelectFilter::make('enrollment_status')
+                    ->label('Status da matricula')
+                    ->options(User::enrollmentStatusOptions())
+                    ->visible($studentOnly),
+                SelectFilter::make('class_name')
+                    ->label('Turma')
+                    ->options(fn () => User::query()->students()->whereNotNull('class_name')->distinct()->orderBy('class_name')->pluck('class_name', 'class_name'))
+                    ->visible($studentOnly),
+            ])
             ->recordActions([
                 Action::make('sendEmail')
-                    ->label('Enviar email')
+                    ->label($studentOnly ? 'Enviar email ao aluno' : 'Enviar email')
                     ->form(self::emailForm())
                     ->action(function (User $record, array $data): void {
                         $log = AdminEmail::send($record, $data['subject'], $data['body']);
@@ -44,11 +73,12 @@ class UsersTable
                     }),
                 ViewAction::make(),
                 EditAction::make(),
+                DeleteAction::make()->hidden(fn (User $record): bool => auth()->id() === $record->id),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     BulkAction::make('sendBulkEmail')
-                        ->label('Enviar email')
+                        ->label($studentOnly ? 'Enviar email aos alunos' : 'Enviar email')
                         ->form(self::emailForm())
                         ->action(function ($records, array $data): void {
                             $sent = 0;

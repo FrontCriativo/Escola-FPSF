@@ -12,6 +12,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Schema as SchemaFacade;
 use UnitEnum;
 
 class ActiveSessionResource extends Resource
@@ -26,8 +27,22 @@ class ActiveSessionResource extends Resource
     public static function canCreate(): bool { return false; }
     public static function canEdit($record): bool { return false; }
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return SchemaFacade::hasTable('sessions');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return SchemaFacade::hasTable('sessions');
+    }
+
     public static function getNavigationBadge(): ?string
     {
+        if (! SchemaFacade::hasTable('sessions')) {
+            return null;
+        }
+
         return (string) ActiveSession::query()->whereNotNull('user_id')->where('last_activity', '>=', now()->subMinutes(15)->timestamp)->count();
     }
 

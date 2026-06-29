@@ -16,9 +16,9 @@ class LibraryStats extends StatsOverviewWidget
         return [
             Stat::make('Livros cadastrados', Book::query()->count()),
             Stat::make('Exemplares disponiveis', Book::query()->sum('copies_available')),
-            Stat::make('Emprestimos ativos', Loan::query()->whereIn('status', ['borrowed', 'overdue'])->count()),
+            Stat::make('Emprestimos ativos', Loan::query()->whereIn('status', Loan::activeStatuses())->count()),
             Stat::make('Atrasados', Loan::query()->where('status', 'overdue')->count()),
-            Stat::make('Contas', User::query()->count()),
+            Stat::make('Alunos cadastrados', User::query()->students()->count()),
             Stat::make('Online agora', ActiveSession::query()->whereNotNull('user_id')->where('last_activity', '>=', now()->subMinutes(15)->timestamp)->count()),
         ];
     }

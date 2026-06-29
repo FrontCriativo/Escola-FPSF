@@ -12,28 +12,35 @@ class EmailLogInfolist
         return $schema
             ->components([
                 TextEntry::make('sender.name')
-                    ->label('Sender')
+                    ->label('Enviado por')
                     ->placeholder('-'),
                 TextEntry::make('recipient.name')
-                    ->label('Recipient')
+                    ->label('Destinatario')
                     ->placeholder('-'),
-                TextEntry::make('recipient_email'),
-                TextEntry::make('subject'),
+                TextEntry::make('recipient_email')->label('Email do destinatario'),
+                TextEntry::make('subject')->label('Assunto'),
                 TextEntry::make('body')
+                    ->label('Mensagem')
                     ->columnSpanFull(),
                 TextEntry::make('status')
-                    ->badge(),
+                    ->label('Status')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => $state === 'sent' ? 'Enviado' : 'Falhou'),
                 TextEntry::make('error')
+                    ->label('Erro')
                     ->placeholder('-')
                     ->columnSpanFull(),
                 TextEntry::make('sent_at')
-                    ->dateTime()
+                    ->label('Enviado em')
+                    ->dateTime('d/m/Y H:i')
                     ->placeholder('-'),
                 TextEntry::make('created_at')
-                    ->dateTime()
+                    ->label('Criado em')
+                    ->dateTime('d/m/Y H:i')
                     ->placeholder('-'),
                 TextEntry::make('updated_at')
-                    ->dateTime()
+                    ->label('Atualizado em')
+                    ->dateTime('d/m/Y H:i')
                     ->placeholder('-'),
             ]);
     }

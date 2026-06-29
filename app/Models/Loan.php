@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class Loan extends Model
 {
@@ -36,41 +38,128 @@ class Loan extends Model
         ];
     }
 
+    public static function activeStatuses(): array
+    {
+        return ['borrowed', 'overdue', 'lost'];
+    }
+
     protected static function booted(): void
     {
-        static::creating(function (Loan $loan) {
+        static::deleting(function (Loan $loan): void {
+            if (! $loan->hasActiveStatus()) {
+                return;
+            }
+
+            $book = Book::query()->lockForUpdate()->find($loan->book_id);
+
+            if ($book !== null) {
+                self::releaseCopy($book);
+            }
+        });
+    }
+
+    public static function createManaged(array $attributes): self
+    {
+        return DB::transaction(function () use ($attributes): self {
+            $loan = new self($attributes);
+            $loan->status ??= 'borrowed';
             $loan->borrowed_at ??= now();
             $loan->due_at ??= now()->addDays(14);
-        });
+            $loan->normalizeReturnedAt();
 
-        static::created(function (Loan $loan) {
-            if (in_array($loan->status, ['borrowed', 'overdue'], true)) {
-                Book::whereKey($loan->book_id)
-                    ->where('copies_available', '>', 0)
-                    ->decrement('copies_available');
-            }
-        });
-
-        static::updating(function (Loan $loan) {
-            if ($loan->status === 'returned' && $loan->returned_at === null) {
-                $loan->returned_at = now();
-            }
-        });
-
-        static::updated(function (Loan $loan) {
-            $wasActive = in_array($loan->getOriginal('status'), ['borrowed', 'overdue'], true);
-            $isActive = in_array($loan->status, ['borrowed', 'overdue'], true);
-
-            if ($wasActive && ! $isActive) {
-                $loan->book?->increment('copies_available');
+            if ($loan->hasActiveStatus()) {
+                $book = Book::query()->lockForUpdate()->findOrFail($loan->book_id);
+                self::assertBookCanBeLoaned($book);
+                self::reserveCopy($book);
             }
 
-            if (! $wasActive && $isActive) {
-                Book::whereKey($loan->book_id)
-                    ->where('copies_available', '>', 0)
-                    ->decrement('copies_available');
-            }
+            $loan->save();
+
+            return $loan->refresh();
         });
+    }
+
+    public function updateManaged(array $attributes): void
+    {
+        DB::transaction(function () use ($attributes): void {
+            /** @var self $loan */
+            $loan = self::query()->lockForUpdate()->findOrFail($this->getKey());
+            $originalBookId = $loan->book_id;
+            $originalStatus = $loan->status;
+
+            $loan->fill($attributes);
+            $loan->normalizeReturnedAt();
+
+            $wasActive = self::statusIsActive($originalStatus);
+            $isActive = $loan->hasActiveStatus();
+            $bookChanged = (int) $originalBookId !== (int) $loan->book_id;
+
+            if ($wasActive && ($bookChanged || ! $isActive)) {
+                $book = Book::query()->lockForUpdate()->findOrFail($originalBookId);
+                self::releaseCopy($book);
+            }
+
+            if ($isActive && ($bookChanged || ! $wasActive)) {
+                $book = Book::query()->lockForUpdate()->findOrFail($loan->book_id);
+                self::assertBookCanBeLoaned($book);
+                self::reserveCopy($book);
+            }
+
+            $loan->save();
+
+            $this->forceFill($loan->getAttributes());
+            $this->syncOriginal();
+        });
+    }
+
+    protected function normalizeReturnedAt(): void
+    {
+        if ($this->status === 'returned' && $this->returned_at === null) {
+            $this->returned_at = now();
+        }
+
+        if ($this->status !== 'returned') {
+            $this->returned_at = null;
+        }
+    }
+
+    public function hasActiveStatus(): bool
+    {
+        return self::statusIsActive($this->status);
+    }
+
+    public static function statusIsActive(?string $status): bool
+    {
+        return in_array($status, self::activeStatuses(), true);
+    }
+
+    protected static function assertBookCanBeLoaned(Book $book): void
+    {
+        if ($book->status !== 'available') {
+            throw ValidationException::withMessages([
+                'book_id' => 'Este livro nao esta disponivel para emprestimo.',
+            ]);
+        }
+
+        if ($book->copies_available < 1) {
+            throw ValidationException::withMessages([
+                'book_id' => 'Nao ha exemplares disponiveis deste livro.',
+            ]);
+        }
+    }
+
+    protected static function reserveCopy(Book $book): void
+    {
+        $book->update([
+            'copies_available' => max(0, $book->copies_available - 1),
+        ]);
+    }
+
+    protected static function releaseCopy(Book $book): void
+    {
+        $book->update([
+            'copies_available' => min($book->copies_total, $book->copies_available + 1),
+        ]);
     }
 
     public function user(): BelongsTo

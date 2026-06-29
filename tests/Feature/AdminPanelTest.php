@@ -15,12 +15,13 @@ class AdminPanelTest extends TestCase
     {
         $this->seed(DatabaseSeeder::class);
 
-        $user = User::query()->where('email', 'test@example.com')->firstOrFail();
+        $user = User::query()->where('email', 'admin@escolafps.local')->firstOrFail();
 
         $this->actingAs($user);
 
         foreach ([
             '/admin',
+            '/admin/students',
             '/admin/books',
             '/admin/categories',
             '/admin/loans',

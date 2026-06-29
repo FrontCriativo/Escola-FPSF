@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\EmailLogs\Tables;
 
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -23,6 +26,12 @@ class EmailLogsTable
             ->filters([
                 SelectFilter::make('status')->label('Status')->options(['sent' => 'Enviado', 'failed' => 'Falhou']),
             ])
-            ->recordActions([ViewAction::make()]);
+            ->recordActions([
+                ViewAction::make(),
+                DeleteAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([DeleteBulkAction::make()]),
+            ]);
     }
 }

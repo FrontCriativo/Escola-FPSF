@@ -1,40 +1,81 @@
 /* ──────────────────────────────────────
+   LOGIN / SESSÃO
+────────────────────────────────────── */
+const INSTITUTIONAL_DOMAIN = '@aluno.educacao.sp.gov.br';
+
+if (sessionStorage.getItem('loggedIn') === '1') {
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.getElementById('logoutBtn').style.display    = 'block';
+} else {
+  document.body.style.overflow = 'hidden';
+}
+
+function doLogin() {
+  const emailEl = document.getElementById('loginEmail');
+  const pwEl    = document.getElementById('loginPassword');
+  const errEl   = document.getElementById('loginError');
+  const email   = emailEl.value.trim().toLowerCase();
+  const pw      = pwEl.value;
+
+  errEl.textContent = '';
+  emailEl.classList.remove('input-error');
+  pwEl.classList.remove('input-error');
+
+  if (!email.endsWith(INSTITUTIONAL_DOMAIN)) {
+    errEl.textContent = 'Use seu e-mail institucional (@aluno.educacao.sp.gov.br).';
+    emailEl.classList.add('input-error');
+    emailEl.focus();
+    return;
+  }
+  if (pw.length < 6) {
+    errEl.textContent = 'A senha deve ter pelo menos 6 caracteres.';
+    pwEl.classList.add('input-error');
+    pwEl.focus();
+    return;
+  }
+
+  sessionStorage.setItem('loggedIn', '1');
+  const overlay = document.getElementById('loginOverlay');
+  overlay.style.opacity = '0';
+  document.getElementById('logoutBtn').style.display = 'block';
+  setTimeout(() => {
+    overlay.style.display   = 'none';
+    document.body.style.overflow = '';
+  }, 500);
+}
+
+function doLogout() {
+  sessionStorage.removeItem('loggedIn');
+  location.reload();
+}
+
+function togglePw() {
+  const pw  = document.getElementById('loginPassword');
+  const btn = document.querySelector('.pw-toggle');
+  if (pw.type === 'password') { pw.type = 'text';     btn.textContent = '🙈'; }
+  else                        { pw.type = 'password'; btn.textContent = '👁'; }
+}
+
+document.addEventListener('keydown', e => {
+  const overlay = document.getElementById('loginOverlay');
+  if (e.key === 'Enter' && overlay && overlay.style.display !== 'none' && overlay.style.opacity !== '0') {
+    doLogin();
+  }
+});
+
+/* ──────────────────────────────────────
    DATA
 ────────────────────────────────────── */
-const fallbackBooks = [
-  { title:"Diário de um Banana", author:"Jeff Kinney", genre:"Literatura", emoji:"📖", image:"/src/img/diarioDeUmBanana.jpg", color:"#a8c7a0", available:true, rating:"★★★★★", desc:"As aventuras e confusões de Greg Heffley narradas em seu diário.", modalDescription:"Ao longo da história, Greg narra suas aventuras com o melhor amigo Rowley Jefferson — ele prefere, aliás, que chamem o diário de \"Livro de Memórias\". É início de ano letivo e tudo o que Greg quer é se tornar popular, mas suas tentativas — como ser monitor de crianças, escrever tirinhas para o jornal da escola ou entrar para o clube de luta — sempre terminam em fracasso, tornando a leitura leve e muito divertida.", year:2007, pages:224 },
-  { title:"O Pequeno Príncipe", author:"Antoine de Saint-Exupéry", genre:"Literatura", emoji:"📘", image:"/src/img/oPequenoPrincipe.jpg", color:"#a0b8d8", available:true, rating:"★★★★★", desc:"Uma história atemporal sobre amizade, amor e o que realmente importa na vida. Leitura essencial.", year:1943, pages:96 },
-  { title:"A Origem das Espécies", author:"Charles Darwin", genre:"Ciências", emoji:"📙", image:"/src/img/aOrigemDasEspecies.jpg", color:"#d8c4a0", available:false, rating:"★★★★☆", desc:"A obra que apresentou a teoria da evolução por seleção natural e transformou a compreensão da vida.", year:1859, pages:502 },
-  { title:"A República", author:"Platão", genre:"Filosofia", emoji:"📕", image:"/src/img/aRepublica.png", color:"#c4a0a0", available:true, rating:"★★★★★", desc:"Diálogo filosófico sobre justiça, política, educação e a construção de uma sociedade ideal.", year:-380, pages:416 },
-  { title:"A Revolução dos Bichos", author:"George Orwell", genre:"Ficção", emoji:"📒", image:"/src/img/aRevolucaoDosBichos.jpg", color:"#d4c4a0", available:true, rating:"★★★★★", desc:"Uma fábula política sobre animais que se rebelam contra seus donos e enfrentam uma nova tirania.", year:1945, pages:152 },
-  { title:"Dom Quixote", author:"Miguel de Cervantes", genre:"Literatura", emoji:"📓", image:"/src/img/domQuixote.jpg", color:"#c4b8d8", available:false, rating:"★★★★★", desc:"As aventuras de um fidalgo que decide viver como cavaleiro andante ao lado de Sancho Pança.", year:1605, pages:863 },
-  { title:"Romeu e Julieta", author:"William Shakespeare", genre:"Teatro", emoji:"🎭", image:"/src/img/RomeuAndJulieta.jpg", color:"#a0c4d4", available:true, rating:"★★★★★", desc:"A célebre tragédia de dois jovens apaixonados pertencentes a famílias rivais.", year:1597, pages:160 },
-  { title:"Vidas Secas", author:"Graciliano Ramos", genre:"Literatura", emoji:"📖", image:"/src/img/vidasSecas.jpg", color:"#d8a0b8", available:true, rating:"★★★★★", desc:"Uma família de retirantes enfrenta a seca, a pobreza e a opressão no sertão nordestino.", year:1938, pages:176 },
+const books = [
+  { title:"Dom Casmurro", author:"Machado de Assis", genre:"Literatura", emoji:"📗", color:"#a8c7a0", available:true,  rating:"★★★★★", desc:"Clássico do realismo brasileiro. Bentinho narra sua história com Capitu num dos maiores romances da língua portuguesa.", year:1899, pages:256 },
+  { title:"O Pequeno Príncipe", author:"Antoine de Saint-Exupéry", genre:"Literatura", emoji:"📘", color:"#a0b8d8", available:true,  rating:"★★★★★", desc:"Uma história atemporal sobre amizade, amor e o que realmente importa na vida. Leitura essencial.", year:1943, pages:96 },
+  { title:"Sapiens", author:"Yuval Noah Harari", genre:"Ciências", emoji:"📙", color:"#d8c4a0", available:false, rating:"★★★★☆", desc:"Uma breve história da humanidade, desde os primeiros humanos até a era moderna, com perspectivas instigantes.", year:2011, pages:443 },
+  { title:"1984", author:"George Orwell", genre:"Ficção", emoji:"📕", color:"#c4a0a0", available:true,  rating:"★★★★★", desc:"Distopia clássica sobre totalitarismo, vigilância e controle da informação. Mais relevante do que nunca.", year:1949, pages:328 },
+  { title:"A Arte da Guerra", author:"Sun Tzu", genre:"Filosofia", emoji:"📒", color:"#d4c4a0", available:true,  rating:"★★★★☆", desc:"Tratado militar milenar com ensinamentos sobre estratégia, liderança e tomada de decisão.", year:-500, pages:112 },
+  { title:"O Alquimista", author:"Paulo Coelho", genre:"Literatura", emoji:"📓", color:"#c4b8d8", available:false, rating:"★★★★☆", desc:"A jornada de Santiago em busca de sua Lenda Pessoal. Um dos livros mais vendidos da história.", year:1988, pages:160 },
+  { title:"Breve História do Tempo", author:"Stephen Hawking", genre:"Ciências", emoji:"🔭", color:"#a0c4d4", available:true,  rating:"★★★★★", desc:"Hawking explica a origem do universo, buracos negros e o tempo de forma acessível e fascinante.", year:1988, pages:212 },
+  { title:"Orgulho e Preconceito", author:"Jane Austen", genre:"Literatura", emoji:"🌸", color:"#d8a0b8", available:true,  rating:"★★★★★", desc:"Romance clássico sobre amor, classe social e as armadilhas dos preconceitos na Inglaterra do século XIX.", year:1813, pages:432 },
 ];
-const books = Array.isArray(window.libraryBooks) && window.libraryBooks.length ? window.libraryBooks : fallbackBooks;
-
-/* THEME */
-const themeToggle = document.getElementById('themeToggle');
-
-function updateThemeToggle(theme) {
-  const isDark = theme === 'dark';
-  themeToggle.setAttribute('aria-pressed', String(isDark));
-  themeToggle.setAttribute('aria-label', isDark ? 'Ativar tema claro' : 'Ativar tema escuro');
-  themeToggle.querySelector('.theme-toggle-icon').textContent = isDark ? '☀' : '☾';
-  themeToggle.querySelector('.theme-toggle-text').textContent = isDark ? 'Tema claro' : 'Tema escuro';
-}
-
-function setTheme(theme) {
-  document.documentElement.dataset.theme = theme;
-  document.documentElement.style.colorScheme = theme;
-  try { localStorage.setItem('theme', theme); } catch (error) { /* Theme still works for this session. */ }
-  updateThemeToggle(theme);
-}
-
-updateThemeToggle(document.documentElement.dataset.theme || 'light');
-themeToggle.addEventListener('click', () => {
-  setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
-});
 
 /* ──────────────────────────────────────
    LOADER
@@ -153,7 +194,7 @@ function renderBooks(list) {
     card.innerHTML = `
       <div class="book-cover" style="background:${b.color}20;">
         <div class="book-spine"></div>
-        ${b.image ? `<img class="book-cover-image" src="${b.image}" alt="Capa do livro ${b.title}">` : `<span style="font-size:4rem">${b.emoji}</span>`}
+        <span style="font-size:4rem">${b.emoji}</span>
       </div>
       <div class="book-info">
         <div class="book-genre">${b.genre}</div>
@@ -176,16 +217,9 @@ renderBooks(books);
 ────────────────────────────────────── */
 function openModal(b) {
   document.getElementById('modalTitle').textContent = b.title;
-  const modalCover = document.getElementById('modalCover');
-  modalCover.innerHTML = b.image
-    ? `<img class="modal-cover-image" src="${b.image}" alt="Capa do livro ${b.title}">`
-    : b.emoji;
-  const modalGenre = document.getElementById('modalGenre');
-  const modalDesc = document.getElementById('modalDesc');
-  modalGenre.textContent = b.modalDescription || b.genre.toUpperCase();
-  modalGenre.classList.toggle('modal-genre-description', Boolean(b.modalDescription));
-  modalDesc.textContent = b.modalDescription ? '' : b.desc;
-  modalDesc.hidden = Boolean(b.modalDescription);
+  document.getElementById('modalCover').textContent = b.emoji;
+  document.getElementById('modalGenre').textContent = b.genre.toUpperCase();
+  document.getElementById('modalDesc').textContent  = b.desc;
   document.getElementById('modalMeta').innerHTML =
     `<span>👤 ${b.author}</span>` +
     `<span>📅 ${b.year > 0 ? b.year : Math.abs(b.year) + ' a.C.'}</span>` +
@@ -199,54 +233,6 @@ function closeModal(e) {
   document.getElementById('modalOverlay').classList.remove('open');
   document.body.style.overflow = '';
 }
-
-function openLogin() {
-  const isLoggedIn = document.querySelector('.btn-login').textContent === 'Aluno';
-  document.getElementById('loginForm').hidden = isLoggedIn;
-  document.getElementById('accountScreen').hidden = !isLoggedIn;
-  document.getElementById('loginModalOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  if (!isLoggedIn) {
-    setTimeout(() => document.getElementById('loginEmail').focus(), 100);
-  }
-}
-
-function requestLoan() {
-  document.getElementById('modalOverlay').classList.remove('open');
-  openLogin();
-}
-
-function closeLogin(e) {
-  if (e && e.target !== document.getElementById('loginModalOverlay')) return;
-  document.getElementById('loginModalOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-function fakeLogin(e) {
-  e.preventDefault();
-  const message = document.getElementById('loginMessage');
-
-  message.textContent = 'Login realizado com sucesso!';
-  document.querySelector('.btn-login').textContent = 'Aluno';
-
-  setTimeout(() => {
-    closeLogin();
-    document.getElementById('loginForm').reset();
-    message.textContent = '';
-  }, 900);
-}
-
-function fakeLogout() {
-  document.querySelector('.btn-login').textContent = 'Login';
-  closeLogin();
-}
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    closeLogin();
-    closeModal();
-  }
-});
 
 /* ──────────────────────────────────────
    SEARCH
@@ -272,11 +258,11 @@ document.getElementById('searchInput').addEventListener('keydown', e => {
 function subscribeNewsletter() {
   const el = document.getElementById('emailInput');
   if (!el.value.includes('@')) {
-    el.style.borderColor = 'var(--danger-text)';
+    el.style.borderColor = '#e74c3c';
     el.placeholder = 'E-mail inválido!';
     return;
   }
-  el.style.borderColor = 'var(--success-text)';
+  el.style.borderColor = '#2ecc71';
   el.value = '';
   el.placeholder = '✅ Cadastrado com sucesso!';
   setTimeout(() => {
@@ -342,6 +328,6 @@ window.addEventListener('scroll', () => {
   let cur = '';
   sections.forEach(s => { if (window.scrollY >= s.offsetTop - 120) cur = s.id; });
   navLinks.forEach(a => {
-    a.style.color = a.getAttribute('href') === '#' + cur ? 'var(--on-dark)' : '';
+    a.style.color = a.getAttribute('href') === '#' + cur ? 'var(--white)' : '';
   });
 }, { passive: true });

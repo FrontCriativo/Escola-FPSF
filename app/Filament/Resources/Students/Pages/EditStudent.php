@@ -1,18 +1,15 @@
 <?php
 
-namespace App\Filament\Resources\Books\Pages;
+namespace App\Filament\Resources\Students\Pages;
 
-use App\Filament\Resources\Books\BookResource;
-use App\Filament\Resources\Books\Pages\Concerns\HandlesBookCoverUpload;
+use App\Filament\Resources\Students\StudentResource;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
 
-class EditBook extends EditRecord
+class EditStudent extends EditRecord
 {
-    use HandlesBookCoverUpload;
-
-    protected static string $resource = BookResource::class;
+    protected static string $resource = StudentResource::class;
 
     protected function getHeaderActions(): array
     {
@@ -24,6 +21,8 @@ class EditBook extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        return $this->normalizeBookData($data);
+        $data['is_admin'] = false;
+
+        return $data;
     }
 }

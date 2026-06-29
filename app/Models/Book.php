@@ -46,6 +46,14 @@ class Book extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::saving(function (Book $book): void {
+            $book->copies_total = max(0, (int) $book->copies_total);
+            $book->copies_available = max(0, min((int) $book->copies_available, $book->copies_total));
+        });
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
@@ -58,7 +66,7 @@ class Book extends Model
 
     public function activeLoans(): HasMany
     {
-        return $this->loans()->whereIn('status', ['borrowed', 'overdue']);
+        return $this->loans()->whereIn('status', Loan::activeStatuses());
     }
 
     public function getIsAvailableAttribute(): bool

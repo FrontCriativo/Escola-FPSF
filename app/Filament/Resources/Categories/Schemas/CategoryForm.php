@@ -13,8 +13,8 @@ class CategoryForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            TextInput::make('name')->label('Nome')->required()->maxLength(255)->live(onBlur: true)->afterStateUpdated(fn ($state, $set) => $set('slug', Str::slug((string) $state))),
-            TextInput::make('slug')->label('Slug')->required()->maxLength(255),
+            TextInput::make('name')->label('Nome')->required()->maxLength(255)->unique(ignoreRecord: true)->live(onBlur: true)->afterStateUpdated(fn ($state, $set) => $set('slug', Str::slug((string) $state))),
+            TextInput::make('slug')->label('Slug')->required()->maxLength(255)->unique(ignoreRecord: true),
             ColorPicker::make('color')->label('Cor')->default('#5B6183')->required(),
             Textarea::make('description')->label('Descricao')->columnSpanFull(),
         ]);

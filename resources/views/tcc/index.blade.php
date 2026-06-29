@@ -15,13 +15,13 @@
       document.documentElement.style.colorScheme = theme;
     })();
   </script>
-  <link rel="stylesheet" href="{{ asset('src/css/style.css') }}" />
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
 <!-- Loader -->
 <div id="loader">
-  <div class="loader-book">📚</div>
+  <img class="loader-logo" src="img/fpsf.jpg" alt="Logo Escola FPSF">
   <p class="loader-text">CARREGANDO BIBLIOTECA</p>
   <div class="loader-bar"><div class="loader-fill"></div></div>
 </div>
@@ -34,8 +34,8 @@
 
 <!-- ─── NAV ─── -->
 <nav>
-  <a href="{{ url('/tcc') }}" class="nav-logo">
-    <span class="book-icon">📖</span>
+  <a href="#" class="nav-logo">
+    <img class="brand-logo" src="img/fpsf.jpg" alt="Logo Escola FPSF">
     <span>Escola FPSF</span>
   </a>
   <ul class="nav-links">
@@ -168,16 +168,12 @@
   <h2 class="section-title reveal">Livros em Destaque</h2>
   <p class="section-subtitle reveal">Confira os títulos mais populares entre nossos alunos neste mês.</p>
 
-  <div class="section-actions">
-    <a href="{{ url('/tcc/todos') }}" class="btn-ver-todos">Ver Todos →</a>
-  </div>
-
   <div class="books-grid" id="booksGrid"></div>
 </section>
 
 <!-- ─── CATEGORIES ─── -->
 <section class="categories-section" id="categorias">
-  <p class="section-label reveal">Explore por área</p>
+  <p class="section-label reveal">Explore por Área</p>
   <h2 class="section-title reveal">Categorias</h2>
   <p class="section-subtitle reveal">Encontre livros organizados por área do conhecimento.</p>
 
@@ -238,15 +234,41 @@
 <!-- ─── EVENTS ─── -->
 <section id="eventos">
   <p class="section-label reveal">Agenda da Biblioteca</p>
-  <h2 class="section-title reveal">Próximos Eventos</h2>
-  <p class="section-subtitle reveal">Participe das nossas atividades de Círculo de Leitura e Competições de Poesia.</p>
+  <h2 class="section-title reveal">Em Breve</h2>
+  <p class="section-subtitle reveal">Participe das nossas atividades culturais e educativas.</p>
 
   <div class="events-list">
     <div class="event-item reveal-left">
+      <div class="event-date"><div class="event-day">05</div><div class="event-month">Mai</div></div>
       <div>
-        <div class="event-title">Em Breve</div>
-        <div class="event-desc">Novos eventos serão divulgados em breve.</div>
+        <div class="event-title">Ex: Clube do Livro — Maio 📚</div>
+        <div class="event-desc">Discussão mensal sobre "Dom Casmurro" de Machado de Assis. Aberto a todos os alunos.</div>
       </div>
+      <div class="event-tag">Literatura</div>
+    </div>
+    <div class="event-item reveal-left" style="transition-delay:.1s">
+      <div class="event-date"><div class="event-day">12</div><div class="event-month">Mai</div></div>
+      <div>
+        <div class="event-title">Ex: Oficina de Poesia ✍️</div>
+        <div class="event-desc">Aprenda técnicas de escrita criativa com a Prof.ª Carla. Vagas limitadas.</div>
+      </div>
+      <div class="event-tag">Workshop</div>
+    </div>
+    <div class="event-item reveal-left" style="transition-delay:.2s">
+      <div class="event-date"><div class="event-day">20</div><div class="event-month">Mai</div></div>
+      <div>
+        <div class="event-title">Ex: Sarau de Leitura 🎤</div>
+        <div class="event-desc">Apresentações de textos autorais e declamação de poesias no auditório da escola.</div>
+      </div>
+      <div class="event-tag">Cultural</div>
+    </div>
+    <div class="event-item reveal-left" style="transition-delay:.3s">
+      <div class="event-date"><div class="event-day">28</div><div class="event-month">Mai</div></div>
+      <div>
+        <div class="event-title">Ex: Maratona de Leitura 🏆</div>
+        <div class="event-desc">Competição entre turmas com prêmios para os maiores leitores do mês.</div>
+      </div>
+      <div class="event-tag">Competição</div>
     </div>
   </div>
 </section>
@@ -270,7 +292,7 @@
           <div class="feat-icon">🤝</div>
           <div>
             <div class="feat-title">Empréstimo Facilitado</div>
-            <div class="feat-desc">Retire até 2 livros por vez com prazo de 15 dias, renovável.</div>
+            <div class="feat-desc">Retire até 3 livros por vez com prazo de 15 dias, renovável.</div>
           </div>
         </div>
         <div class="feat-item reveal" style="transition-delay:.3s">
@@ -309,7 +331,7 @@
 <footer>
   <div class="footer-grid">
     <div class="footer-brand">
-      <span class="book-icon">📖</span>
+      <img class="footer-logo" src="img/fpsf.jpg" alt="Logo Escola FPSF">
       <h3>Escola FPSF</h3>
       <p>Um lugar de conhecimento, imaginação e descobertas. Nossa missão é formar leitores para a vida.</p>
     </div>
@@ -381,14 +403,11 @@
       <p class="login-message" id="loginMessage" aria-live="polite"></p>
       <button type="submit" class="btn btn-primary login-submit">Entrar</button>
     </form>
-    <div class="account-screen" id="accountScreen" hidden>
-      <h3>Aluno</h3>
-      <button type="button" class="btn btn-primary login-submit" onclick="fakeLogout()">Sair da Conta</button>
-    </div>
   </div>
 </div>
 
-<script>window.libraryBooks = @json($booksPayload ?? []);</script>
-<script src="{{ asset('src/js/script.js') }}"></script>
+<script src="js/script.js"></script>
 </body>
 </html>
+
+

@@ -6,6 +6,7 @@ use App\Models\Loan;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Notifications\Notification;
@@ -35,6 +36,8 @@ class LoansTable
             ])
             ->filters([
                 SelectFilter::make('status')->label('Status')->options(Loan::statusOptions()),
+                SelectFilter::make('user_id')->label('Aluno')->relationship('user', 'name')->searchable()->preload(),
+                SelectFilter::make('book_id')->label('Livro')->relationship('book', 'title')->searchable()->preload(),
             ])
             ->recordActions([
                 Action::make('returnBook')
@@ -42,15 +45,19 @@ class LoansTable
                     ->visible(fn (Loan $record): bool => $record->status !== 'returned')
                     ->requiresConfirmation()
                     ->action(function (Loan $record): void {
-                        $record->update(['status' => 'returned', 'returned_at' => now()]);
+                        $record->updateManaged(['status' => 'returned', 'returned_at' => now()]);
                         Notification::make()->title('Livro devolvido')->success()->send();
                     }),
                 Action::make('markOverdue')
                     ->label('Marcar atraso')
                     ->visible(fn (Loan $record): bool => $record->status === 'borrowed')
-                    ->action(fn (Loan $record) => $record->update(['status' => 'overdue'])),
+                    ->action(function (Loan $record): void {
+                        $record->updateManaged(['status' => 'overdue']);
+                        Notification::make()->title('Emprestimo marcado como atrasado')->warning()->send();
+                    }),
                 ViewAction::make(),
                 EditAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([DeleteBulkAction::make()]),

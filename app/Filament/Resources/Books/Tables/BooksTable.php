@@ -8,6 +8,7 @@ use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DateTimePicker;
@@ -26,6 +27,7 @@ class BooksTable
     {
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('category'))
+            ->defaultSort('title')
             ->columns([
                 TextColumn::make('title')->label('Titulo')->searchable()->sortable(),
                 TextColumn::make('author')->label('Autor')->searchable()->sortable(),
@@ -52,12 +54,12 @@ class BooksTable
                     ->label('Emprestar')
                     ->visible(fn (Book $record): bool => $record->is_available)
                     ->form([
-                        Select::make('user_id')->label('Conta')->options(fn () => User::query()->orderBy('name')->pluck('name', 'id'))->searchable()->required(),
+                        Select::make('user_id')->label('Aluno')->options(fn () => User::query()->students()->orderBy('name')->pluck('name', 'id'))->searchable()->required(),
                         DateTimePicker::make('due_at')->label('Data de devolucao')->default(now()->addDays(14))->required(),
                         Textarea::make('notes')->label('Observacoes'),
                     ])
                     ->action(function (Book $record, array $data): void {
-                        Loan::create([
+                        Loan::createManaged([
                             'user_id' => $data['user_id'],
                             'book_id' => $record->id,
                             'status' => 'borrowed',
@@ -69,6 +71,7 @@ class BooksTable
                     }),
                 ViewAction::make(),
                 EditAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([DeleteBulkAction::make()]),

@@ -28,7 +28,7 @@ class LoanResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return (string) Loan::query()->whereIn('status', ['borrowed', 'overdue'])->count();
+        return (string) Loan::query()->whereIn('status', Loan::activeStatuses())->count();
     }
 
     public static function form(Schema $schema): Schema { return LoanForm::configure($schema); }
